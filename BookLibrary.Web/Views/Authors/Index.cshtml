@@ -1,0 +1,40 @@
+﻿@model IEnumerable<BookLibrary.Model.Author>
+
+@{
+    ViewBag.Title = "Authors";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Authors</h2>
+
+<p>
+    @Html.ActionLink("Create New", "Create")
+</p>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.AuthorName)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Nacionality)
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.AuthorName)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Nacionality)
+        </td>
+        <td>
+            @Html.ActionLink("Edit", "Edit", new { id=item.AuthorId }) |
+            @Html.ActionLink("Details", "Details", new { id=item.AuthorId }) |
+            @Html.ActionLink("Delete", "Delete", new { id=item.AuthorId })
+        </td>
+    </tr>
+}
+
+</table>

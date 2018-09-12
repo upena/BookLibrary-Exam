@@ -1,0 +1,127 @@
+﻿@model CategoryViewModel
+
+@{
+    ViewBag.Title = "Edit Category";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Edit Category</h2>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+     @Html.HiddenFor(model => model.Id)
+
+    <div class="form-horizontal">
+        <h4>Category</h4>
+        <hr />
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <div class="form-group">
+            @Html.LabelFor(model => model.Name, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.Name, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.Name, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.Books.FirstOrDefault().Id, "Book", htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                <div class="form-inline">
+                    @Html.DropDownList("BookId", null, "Select", htmlAttributes: new { @class = "form-control" }) &nbsp;
+                    <button id="AddBook" type="button" class="btn btn-default">
+                        <span class="fa fa-plus-circle" aria-hidden="true" /> Add Book
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="divBooks">
+            @Html.Partial("_Books", Model.Books)
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="submit" value="Save" class="btn btn-default" />
+            </div>
+        </div>
+    </div>
+}
+
+
+@if (TempData["ErrorMessage"] != null)
+{
+    @Html.Partial("_ErrorMessage")
+}
+
+@Html.Partial("_DeleteConfirm")
+
+
+<div>
+    @Html.ActionLink("Back to List", "Index")
+</div>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        $("#AddBook").click(function (e) {
+            e.preventDefault();
+            AddBook();
+        });
+
+
+        function AddBook() {
+            var bookId = $("#BookId").val();
+            if (bookId == '' || bookId == null || bookId <= 0) {
+                alert('Select a book');
+                return false;
+            }
+            var bookTitle = $("#BookId").children(':selected').text();
+            var model = { Id: bookId, Title: bookTitle };
+            $.ajax({
+                url: '@Url.Action("AddBook", "Categories")',
+                data: { book: model },
+                dataType: "json",
+                type: 'POST',
+                success: function (data) {
+                    var index = $('#BookId').get(0).selectedIndex;
+                    $('#BookId option:eq(' + index + ')').remove();
+                    $("#divBooks").html(data.Books);
+                }
+            });
+        }
+
+
+        var bookIndex;
+        $(document).on('click', '#DeleteBook', function () {
+            bookIndex = $(this).data('id');
+        });
+
+        $("#btnContinueDelete").click(function (e) {
+            e.preventDefault();
+            DeleteBook();
+        });
+
+        function DeleteBook() {
+            debugger;
+            $.ajax({
+                url: '@Url.Action("DeleteBook", "Categories")',
+                traditional: true,
+                data: { index: bookIndex },
+                dataType: "json",
+                type: 'POST',
+                success: function (data) {
+                    $("#deleteConfirmModal").modal('hide');
+                    var $dropdown = $("#BookId");
+                    $dropdown.empty();
+                    $dropdown.append($("<option />").val(0).text('Select'));
+                    $.each(data.AllBooks, function () {
+                        $dropdown.append($("<option />").val(this.Id).text(this.Title));
+                    });
+                    $("#divBooks").html(data.Books);
+                }
+            });
+        }
+
+    });
+</script>
